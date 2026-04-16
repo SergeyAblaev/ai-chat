@@ -1,4 +1,23 @@
+app:
+  security:
+    users:
+      - username: admin
+        password: ${APP_ADMIN_PASSWORD:admin123}
+        roles:
+          - ADMIN
+          - USER
+
+      - username: user
+        password: ${APP_USER_PASSWORD:user123}
+        roles:
+          - USER
+
 spring:
+  datasource:
+    url: jdbc:hsqldb:mem:chatdb
+    username: sa
+    password:
+    driver-class-name: org.hsqldb.jdbc.JDBCDriver
   ai:
     open-ai:
       api-key: ${OPENAI_API_KEY}
