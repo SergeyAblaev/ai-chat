@@ -19,7 +19,7 @@ spring:
     password:
     driver-class-name: org.hsqldb.jdbc.JDBCDriver
   ai:
-    open-ai:
+    openai:
       api-key: ${OPENAI_API_KEY}
       chat:
         options:
@@ -30,3 +30,10 @@ spring:
       chat:
         options:
           model: ${SECONDARY_LLM}
+    google:
+      genai:
+        api-key: ${GEMINI_API_KEY}
+        chat:
+          options:
+            model: ${GEMINI_MODEL:gemini-3.5-flash-lite}
+            temperature: 1

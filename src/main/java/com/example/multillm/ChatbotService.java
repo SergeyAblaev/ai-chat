@@ -16,18 +16,21 @@ class ChatbotService {
 
     private final ChatClient primaryChatClient;
     private final ChatClient secondaryChatClient;
+    private final ChatClient geminiChatClient;
 
     ChatbotService(
         ChatClient primaryChatClient,
-        @Qualifier("secondaryChatClient") ChatClient secondaryChatClient
+        @Qualifier("secondaryChatClient") ChatClient secondaryChatClient,
+        @Qualifier("geminiChatClient") ChatClient geminiChatClient
     ) {
         this.primaryChatClient = primaryChatClient;
         this.secondaryChatClient = secondaryChatClient;
+        this.geminiChatClient = geminiChatClient;
     }
 
     @Retryable(retryFor = Exception.class, maxAttempts = 3)
     String chat(String prompt) {
-        logger.debug("Process prompt '{}' with primary LLM. Attempt #{}",
+        logger.debug("Attempting to process prompt '{}' with primary LLM. Attempt #{}",
             prompt, RetrySynchronizationManager.getContext().getRetryCount() + 1);
         return primaryChatClient
             .prompt(prompt)
@@ -38,7 +41,7 @@ class ChatbotService {
     @Recover
     String chat(Exception exception, String prompt) {
         logger.warn("Primary LLM failure. Error received: {}", exception.getMessage());
-        logger.debug("Process prompt '{}' with secondary LLM", prompt);
+        logger.debug("Attempting to process prompt '{}' with secondary LLM", prompt);
         try {
             return secondaryChatClient
                 .prompt(prompt)
@@ -46,7 +49,17 @@ class ChatbotService {
                 .content();
         } catch (Exception e) {
             logger.warn("Secondary LLM failure: {}", e.getMessage());
-            throw new RuntimeException("Failed to process prompt with primary and secondary LLMs", e);
+        }
+
+        logger.debug("Attempting to process prompt '{}' with Gemini", prompt);
+        try {
+            return geminiChatClient
+                .prompt(prompt)
+                .call()
+                .content();
+        } catch (Exception e) {
+            logger.warn("Gemini failure: {}", e.getMessage());
+            throw new RuntimeException("Failed to process prompt with all configured LLMs", e);
         }
     }
 
