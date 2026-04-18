@@ -84,6 +84,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.6.0</version>
+        </dependency>
     </dependencies>
 
     <properties>
@@ -113,6 +118,32 @@
                     <target>17</target>
                 </configuration>
             </plugin>
+            <!-- Git commit info plugin -->
+            <plugin>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
+                <configuration>
+                    <excludeProperties>
+                        <excludeProperty>git.remote.*</excludeProperty>
+                        <excludeProperty>git.build.user.*</excludeProperty>
+                        <excludeProperty>git.commit.committer.*</excludeProperty>
+                        <excludeProperty>git.commit.author.*</excludeProperty>
+                        <excludeProperty>git.closest.*</excludeProperty>
+                        <excludeProperty>git.dirty.*</excludeProperty>
+                        <excludeProperty>git.local.*</excludeProperty>
+                        <excludeProperty>git.commit.message.full</excludeProperty>
+                        <excludeProperty>git.commit.user.email</excludeProperty>
+                    </excludeProperties>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 
