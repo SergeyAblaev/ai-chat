@@ -1,4 +1,12 @@
 # AI-chat Project
+Current logic:
+First request, Fallback route:
+`OpenAI -> Anthropic -> Gemini`
+
+successfulProvider is saved
+
+Next request:
+directly to successfulProvider
 
 ### Swagger
 http://localhost:8080/swagger-ui/index.html

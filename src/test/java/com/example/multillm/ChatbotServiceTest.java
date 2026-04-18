@@ -56,14 +56,14 @@ class ChatbotServiceTest {
                     .isNotEmpty()
                     .containsIgnoringCase(EXPECTED_LLM_RESPONSE);
             assertThat(capturedOutput.getOut())
-                    .contains("Attempting to process prompt '" + LLM_PROMPT + "' with primary LLM. Attempt #1")
-                    .contains("Attempting to process prompt '" + LLM_PROMPT + "' with primary LLM. Attempt #2")
-                    .contains("Attempting to process prompt '" + LLM_PROMPT + "' with primary LLM. Attempt #3")
-                    .contains("Primary LLM failure")
-                    .contains("Attempting to process prompt '" + LLM_PROMPT + "' with secondary LLM")
-                    .contains("Secondary LLM failure")
-                    .contains("Attempting to process prompt '" + LLM_PROMPT + "' with Gemini")
-                    .doesNotContain("Gemini failure");
+                    .contains("Attempting to process prompt with OPENAI. Attempt #1")
+                    .contains("Attempting to process prompt with OPENAI. Attempt #2")
+                    .contains("Attempting to process prompt with OPENAI. Attempt #3")
+                    .contains("OPENAI failure")
+                    .contains("Attempting to process prompt with ANTHROPIC. Attempt #1")
+                    .contains("ANTHROPIC failure")
+                    .contains("Attempting to process prompt with GEMINI. Attempt #1")
+                    .doesNotContain("GEMINI failure");
         }
     }
 
@@ -86,9 +86,9 @@ class ChatbotServiceTest {
                 .isNotEmpty()
                 .containsIgnoringCase(EXPECTED_LLM_RESPONSE);
             assertThat(capturedOutput.getOut())
-                .contains("Attempting to process prompt '" + LLM_PROMPT + "' with primary LLM. Attempt #1")
-                .doesNotContain("Attempting to process prompt '" + LLM_PROMPT + "' with primary LLM. Attempt #2")
-                .doesNotContain("Primary LLM failure");
+                .contains("Attempting to process prompt with OPENAI. Attempt #1")
+                .doesNotContain("Attempting to process prompt with OPENAI. Attempt #2")
+                .doesNotContain("OPENAI failure");
         }
     }
 }
