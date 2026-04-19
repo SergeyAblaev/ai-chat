@@ -1,5 +1,6 @@
 package com.example.multillm;
 
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,6 +14,10 @@ class ChatbotController {
         this.chatbotService = chatbotService;
     }
 
+    @Operation(
+            summary = "Symple stateless request",
+            description = "Fault-tolerant single request without context"
+    )
     @PostMapping("/api/chatbot/chat")
     ChatResponse chat(@RequestBody ChatRequest request) {
         String response = chatbotService.chat(request.prompt);

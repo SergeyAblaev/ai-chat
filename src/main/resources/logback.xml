@@ -15,7 +15,7 @@
 
     <appender name="server-appender" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${log_directory}/spring-ai-chat_${file_name_pattern_suffix}</fileNamePattern>
+            <fileNamePattern>${log_directory}/spring-ai-chat${file_name_pattern_suffix}</fileNamePattern>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>${log_size}</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>

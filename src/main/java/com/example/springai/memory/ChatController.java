@@ -1,5 +1,6 @@
 package com.example.springai.memory;
 
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +17,10 @@ public class ChatController {
         this.chatService = chatService;
     }
 
+    @Operation(
+            summary = "Start context dialog",
+            description = "Long-running dialog with context"
+    )
     @PostMapping("/ai-chat")
     public ResponseEntity<String> chat(@RequestBody @Valid ChatRequest request) {
         String response = chatService.chat(request.getPrompt());
