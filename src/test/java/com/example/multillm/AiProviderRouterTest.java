@@ -1,11 +1,14 @@
 package com.example.multillm;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataRetrievalFailureException;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class AiProviderRouterTest {
 
@@ -70,5 +73,19 @@ class AiProviderRouterTest {
                 AiProvider.OPENAI
         );
         assertThat(router.getSuccessfulProvider()).isEqualTo(AiProvider.OPENAI);
+    }
+
+    @Test
+    void doesNotTreatDatabaseFailureAsProviderFailure() {
+        AiProviderRouter router = new AiProviderRouter();
+        List<AiProvider> calls = new ArrayList<>();
+
+        assertThatThrownBy(() -> router.chat(provider -> {
+            calls.add(provider);
+            throw new DataRetrievalFailureException("Chat memory is unavailable");
+        })).isInstanceOf(DataAccessException.class);
+
+        assertThat(calls).containsExactly(AiProvider.OPENAI);
+        assertThat(router.getSuccessfulProvider()).isNull();
     }
 }

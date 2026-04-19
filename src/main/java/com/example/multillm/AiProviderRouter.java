@@ -1,8 +1,7 @@
 package com.example.multillm;
 
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -38,6 +37,8 @@ public class AiProviderRouter {
                     successfulProvider.set(provider);
                     log.info("Setted successfulProvider is {}", provider);
                     return response;
+                } catch (DataAccessException exception) {
+                    throw exception;
                 } catch (Exception exception) {
                     lastException = exception;
                     log.warn("{} failure on attempt #{}: {}",
