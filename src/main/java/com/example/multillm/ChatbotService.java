@@ -24,7 +24,7 @@ class ChatbotService {
         this.aiProviderRouter = aiProviderRouter;
     }
 
-    String chat(String prompt) {
+    AiProviderRouter.RoutingResult chat(String prompt) {
         return aiProviderRouter.chat(provider -> clientFor(provider)
                 .prompt(prompt)
                 .call()

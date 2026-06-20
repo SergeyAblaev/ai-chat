@@ -1,18 +1,5 @@
 package com.example.springai.memory;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 
-public class ChatRequest {
-
-    @NotNull
-    private String prompt;
-
-    public String getPrompt() {
-        return prompt;
-    }
-
-    public void setPrompt(String prompt) {
-        this.prompt = prompt;
-    }
-
-}
+public record ChatRequest(@NotBlank String prompt) {}
