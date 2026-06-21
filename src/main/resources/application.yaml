@@ -27,13 +27,13 @@ spring:
       api-key: ${OPENAI_API_KEY}
       chat:
         options:
-          model: ${PRIMARY_LLM}
+          model: ${PRIMARY_LLM:gpt-5-mini}
           temperature: 1
     anthropic:
       api-key: ${ANTHROPIC_API_KEY}
       chat:
         options:
-          model: ${SECONDARY_LLM}
+          model: ${SECONDARY_LLM:claude-sonnet}
     google:
       genai:
         api-key: ${GEMINI_API_KEY}
