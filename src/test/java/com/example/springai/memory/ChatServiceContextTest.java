@@ -1,14 +1,9 @@
 package com.example.springai.memory;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,26 +18,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ChatServiceContextTest {
 
     @Autowired
-    private ApplicationContext applicationContext;
+    private ConversationService conversationService;
 
     @Autowired
     private ChatMemory chatMemory;
 
-    @AfterEach
-    void resetRequestContext() {
-        RequestContextHolder.resetRequestAttributes();
-    }
-
     @Test
-    void createsSessionScopedChatServiceWithAllConfiguredProviders() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.getSession();
-        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+    void createsExplicitConversationForChatMemory() {
+        ConversationService.Conversation conversation = conversationService.create();
 
-        ChatService chatService = applicationContext.getBean(ChatService.class);
-
-        assertThat(chatService).isNotNull();
-        assertThat(chatService.getConversationId()).isNotBlank();
-        assertThat(chatMemory.get(chatService.getConversationId())).isEmpty();
+        assertThat(conversation.id()).startsWith("conv_");
+        assertThat(conversation.createdAt()).isNotNull();
+        assertThat(conversation.title()).isNull();
+        assertThat(chatMemory.get(conversation.id())).isEmpty();
     }
 }

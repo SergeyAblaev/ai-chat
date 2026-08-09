@@ -17,7 +17,7 @@ class AiProviderRouterTest {
         AiProviderRouter router = new AiProviderRouter();
         List<AiProvider> calls = new ArrayList<>();
 
-        String firstResponse = router.chat(provider -> {
+        AiProviderRouter.RoutingResult firstResult = router.chat(provider -> {
             calls.add(provider);
             if (provider == AiProvider.OPENAI) {
                 throw new RuntimeException("OpenAI is unavailable");
@@ -25,7 +25,18 @@ class AiProviderRouterTest {
             return "Anthropic response";
         });
 
-        assertThat(firstResponse).isEqualTo("Anthropic response");
+        assertThat(firstResult.content()).isEqualTo("Anthropic response");
+        assertThat(firstResult.provider()).isEqualTo(AiProvider.ANTHROPIC);
+        assertThat(firstResult.attemptCount()).isEqualTo(4);
+        assertThat(firstResult.fallbackUsed()).isTrue();
+        assertThat(firstResult.attempts())
+                .extracting(AiProviderRouter.Attempt::status)
+                .containsExactly(
+                        AiProviderRouter.AttemptStatus.FAILED,
+                        AiProviderRouter.AttemptStatus.FAILED,
+                        AiProviderRouter.AttemptStatus.FAILED,
+                        AiProviderRouter.AttemptStatus.SUCCESS
+                );
         assertThat(calls).containsExactly(
                 AiProvider.OPENAI,
                 AiProvider.OPENAI,
@@ -36,12 +47,15 @@ class AiProviderRouterTest {
 
         calls.clear();
 
-        String secondResponse = router.chat(provider -> {
+        AiProviderRouter.RoutingResult secondResult = router.chat(provider -> {
             calls.add(provider);
             return "Remembered provider response";
         });
 
-        assertThat(secondResponse).isEqualTo("Remembered provider response");
+        assertThat(secondResult.content()).isEqualTo("Remembered provider response");
+        assertThat(secondResult.provider()).isEqualTo(AiProvider.ANTHROPIC);
+        assertThat(secondResult.attemptCount()).isEqualTo(1);
+        assertThat(secondResult.fallbackUsed()).isFalse();
         assertThat(calls).containsExactly(AiProvider.ANTHROPIC);
     }
 
@@ -57,7 +71,7 @@ class AiProviderRouterTest {
         });
 
         List<AiProvider> calls = new ArrayList<>();
-        String response = router.chat(provider -> {
+        AiProviderRouter.RoutingResult result = router.chat(provider -> {
             calls.add(provider);
             if (provider == AiProvider.GEMINI) {
                 throw new RuntimeException("Gemini is unavailable");
@@ -65,7 +79,8 @@ class AiProviderRouterTest {
             return "OpenAI response";
         });
 
-        assertThat(response).isEqualTo("OpenAI response");
+        assertThat(result.content()).isEqualTo("OpenAI response");
+        assertThat(result.provider()).isEqualTo(AiProvider.OPENAI);
         assertThat(calls).containsExactly(
                 AiProvider.GEMINI,
                 AiProvider.GEMINI,

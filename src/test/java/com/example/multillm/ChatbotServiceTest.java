@@ -50,9 +50,9 @@ class ChatbotServiceTest {
 
         @Test
         void whenPrimaryAndSecondaryLLMsFail_thenChatbotFallbacksToGemini(CapturedOutput capturedOutput) {
-            String response = chatbotService.chat(LLM_PROMPT);
+            AiProviderRouter.RoutingResult result = chatbotService.chat(LLM_PROMPT);
 
-            assertThat(response)
+            assertThat(result.content())
                     .isNotEmpty()
                     .containsIgnoringCase(EXPECTED_LLM_RESPONSE);
             assertThat(capturedOutput.getOut())
@@ -80,9 +80,9 @@ class ChatbotServiceTest {
 
         @Test
         void whenPrimaryLLMAvailable_thenFallbackNotInitiated(CapturedOutput capturedOutput) {
-            String response = chatbotService.chat(LLM_PROMPT);
+            AiProviderRouter.RoutingResult result = chatbotService.chat(LLM_PROMPT);
 
-            assertThat(response)
+            assertThat(result.content())
                 .isNotEmpty()
                 .containsIgnoringCase(EXPECTED_LLM_RESPONSE);
             assertThat(capturedOutput.getOut())

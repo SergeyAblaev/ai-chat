@@ -17,12 +17,14 @@ public class AiProviderRouter {
 
     private final AtomicReference<AiProvider> successfulProvider = new AtomicReference<>();
 
-    public String chat(ProviderCall providerCall) {
+    public RoutingResult chat(ProviderCall providerCall) {
+        long requestStartedAt = System.nanoTime();
         AiProvider preferredProvider = successfulProvider.get();
         AiProvider retryProvider = preferredProvider == null
                 ? AiProvider.OPENAI
                 : preferredProvider;
         Exception lastException = null;
+        List<Attempt> attempts = new ArrayList<>();
 
         for (AiProvider provider : providersStartingWith(preferredProvider)) {
             int maxAttempts = provider == retryProvider
@@ -30,16 +32,34 @@ public class AiProviderRouter {
                     : 1;
 
             for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+                long attemptStartedAt = System.nanoTime();
                 try {
                     log.debug("Attempting to process prompt with {}. Attempt #{}",
                             provider, attempt);
                     String response = providerCall.call(provider);
+                    attempts.add(new Attempt(
+                            provider,
+                            attempt,
+                            AttemptStatus.SUCCESS,
+                            elapsedMillis(attemptStartedAt)
+                    ));
                     successfulProvider.set(provider);
                     log.info("Setted successfulProvider is {}", provider);
-                    return response;
+                    return new RoutingResult(
+                            response,
+                            provider,
+                            elapsedMillis(requestStartedAt),
+                            List.copyOf(attempts)
+                    );
                 } catch (DataAccessException exception) {
                     throw exception;
                 } catch (Exception exception) {
+                    attempts.add(new Attempt(
+                            provider,
+                            attempt,
+                            AttemptStatus.FAILED,
+                            elapsedMillis(attemptStartedAt)
+                    ));
                     lastException = exception;
                     log.warn("{} failure on attempt #{}: {}",
                             provider, attempt, exception.getMessage());
@@ -53,6 +73,10 @@ public class AiProviderRouter {
 
     public AiProvider getSuccessfulProvider() {
         return successfulProvider.get();
+    }
+
+    private long elapsedMillis(long startedAt) {
+        return Math.max(0L, (System.nanoTime() - startedAt) / 1_000_000L);
     }
 
     private List<AiProvider> providersStartingWith(AiProvider preferredProvider) {
@@ -71,5 +95,36 @@ public class AiProviderRouter {
     @FunctionalInterface
     public interface ProviderCall {
         String call(AiProvider provider);
+    }
+
+    public record RoutingResult(
+            String content,
+            AiProvider provider,
+            long durationMs,
+            List<Attempt> attempts
+    ) {
+        public int attemptCount() {
+            return attempts.size();
+        }
+
+        public boolean fallbackUsed() {
+            return attempts.stream()
+                    .map(Attempt::provider)
+                    .distinct()
+                    .limit(2)
+                    .count() > 1;
+        }
+    }
+
+    public record Attempt(
+            AiProvider provider,
+            int attempt,
+            AttemptStatus status,
+            long durationMs
+    ) {}
+
+    public enum AttemptStatus {
+        SUCCESS,
+        FAILED
     }
 }

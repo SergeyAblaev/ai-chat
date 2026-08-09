@@ -2,103 +2,176 @@
 
 ## Multi-LLM AI Chat Backend with Spring Boot and Conversation Memory
 
-### Project description
-Secure REST API for an AI chatbot using Java, Spring Boot, and Spring AI. The application integrates OpenAI, Anthropic Claude, and Google Gemini through a centralized provider-routing mechanism.
-The system automatically retries failed requests, switches to an available AI provider, and remembers the last successful provider to optimize subsequent requests. It supports both stateless chatbot requests and session-based conversations with persistent chat history.
-Chat memory is stored through a JDBC repository, with the database schema managed by Liquibase. The application also includes HTTP Basic authentication, role-based access control, request validation, Swagger/OpenAPI documentation, health monitoring, logging, and automated tests.
+Secure REST API for an AI chatbot using Java, Spring Boot, and Spring AI. The
+application integrates OpenAI, Anthropic, and Google Gemini through a centralized
+provider router with retries, fallback, execution tracing, and remembered provider
+preference.
 
-### Test user
+The API supports two modes:
 
-- username: user
-- password: user123
+- `RESILIENT`: one stateless request with retries and provider fallback.
+- `CONTEXT`: an explicit conversation resource whose ID is used as the Spring AI
+  chat-memory key.
 
-### Endpoints
+All endpoints require HTTP Basic authentication. The default development user is
+`user` / `user123`.
 
-Both endpoints accept `POST` with the same input JSON:
+## API
+
+### Resilient request
+
+```http
+POST /api/chatbot/chat
+Content-Type: application/json
+
+{
+  "prompt": "Question text"
+}
+```
+
+Successful response:
 
 ```json
 {
-"prompt": "Question text"
+  "message": {
+    "id": "msg_f2a5...",
+    "role": "assistant",
+    "content": "Model Response",
+    "createdAt": "2026-08-07T16:02:31.425+07:00"
+  },
+  "execution": {
+    "requestId": "req_39ab...",
+    "mode": "RESILIENT",
+    "provider": "ANTHROPIC",
+    "model": "claude-sonnet",
+    "status": "SUCCESS",
+    "fallbackUsed": true,
+    "attemptCount": 4,
+    "durationMs": 4231,
+    "attempts": [
+      {
+        "provider": "OPENAI",
+        "attempt": 1,
+        "status": "FAILED",
+        "durationMs": 812
+      },
+      {
+        "provider": "OPENAI",
+        "attempt": 2,
+        "status": "FAILED",
+        "durationMs": 906
+      },
+      {
+        "provider": "OPENAI",
+        "attempt": 3,
+        "status": "FAILED",
+        "durationMs": 794
+      },
+      {
+        "provider": "ANTHROPIC",
+        "attempt": 1,
+        "status": "SUCCESS",
+        "durationMs": 1419
+      }
+    ]
+  }
 }
 ```
-But they are intended for different scenarios.
 
-| Feature | `/ai-chat` | `/api/chatbot/chat` |
-|---|---|---|
-| Purpose | Long-running dialog with context | Fault-tolerant single request |
-| Memory of previous messages | Yes, within an HTTP session | No |
-| LLM selection | One embedded `ChatModel` | OpenAI → Anthropic → Gemini |
-| Retry | No additional retry in the service | Up to 3 OpenAI retries |
-| Fallback | No | Anthropic, then Gemini |
-| `prompt` validation | `@Valid`, `prompt != null` | No explicit validation |
-| Response format | Just a string | JSON `{"response":"..."}` |
+`fallbackUsed` is true only when the current request moves to a different
+provider. Retries of the same provider do not count as fallback. The `model`
+field is read from the active Spring configuration for the successful provider.
 
-### `/ai-chat`
+### Create a context conversation
 
-`ChatController.java; ChatService.java`
-
-Logic:
-
-1. Spring validates the ChatRequest: the prompt field is marked with @NotNull.
-2. The controller passes the prompt to the ChatService.
-3. The ChatService has @SessionScope, so a separate service instance is created for each HTTP session.
-4. When the service is created, a unique conversationId is generated.
-5. The MessageChatMemoryAdvisor adds the conversation history to the request.
-6. The message is sent to the default ChatModel.
-7. The client receives the response text without the JSON wrapper.
-
-The history is stored via JDBC in an in-memory HSQLDB: [ChatConfig.java](/Users/sergeyablaev/Projects/my/LLM/ai-chat/src/main/java/com/example/springai/memory/ChatConfig.java:13).
-It will disappear after restarting the application.
-
-Sample answer:
-
-```text
-The previous question was about Spring AI.
+```http
+POST /api/conversations
 ```
 
-For memory to work between HTTP requests, the client must store and pass a session cookie (`JSESSIONID`). However, Spring Security is configured as stateless, so Basic Auth still needs to be sent with every request.
-### `/api/chatbot/chat`
+Returns `201 Created`:
 
-`ChatbotController.java; ChatbotService.java`
-Logic:
+```json
+{
+  "id": "conv_7a91...",
+  "createdAt": "2026-08-07T16:02:31.425+07:00",
+  "title": null
+}
+```
 
-1. The prompt is first sent to the primary LLM, OpenAI.
-2. If any error occurs, the request to OpenAI is retried, with a maximum of three attempts.
-3. If all three attempts fail, @Recover is called.
-4. @Recover makes a single call to the secondary LLM, Anthropic.
-5. If Anthropic is unavailable, the request is sent to Gemini.
-6. If all three providers fail to respond, a RuntimeException is thrown, which typically translates to an HTTP 500.
+### Send a context message
 
-The order of the models is specified in `ChatbotConfiguration.java`
+```http
+POST /api/conversations/{conversationId}/messages
+Content-Type: application/json
+
+{
+  "prompt": "Explain Spring AI"
+}
+```
+
+Successful response:
+
+```json
+{
+  "message": {
+    "id": "msg_9c24...",
+    "role": "assistant",
+    "content": "Spring AI is...",
+    "createdAt": "2026-08-07T16:03:12.150+07:00"
+  },
+  "execution": {
+    "requestId": "req_81d0...",
+    "mode": "CONTEXT",
+    "provider": "OPENAI",
+    "model": "gpt-5-mini",
+    "durationMs": 735
+  }
+}
+```
+
+An unknown conversation ID returns `404 Not Found`. A missing or blank `prompt`
+returns `400 Bad Request`.
+
+The previous `POST /ai-chat` session-scoped endpoint has been replaced by these
+explicit conversation endpoints. Conversation metadata is currently kept in an
+in-memory registry. Message history is stored by Spring AI through the JDBC chat
+memory repository in the in-memory HSQLDB, so both are cleared on application
+restart.
+
+## Provider routing
+
+For the first request, the default order is:
 
 ```text
-OpenAI — 3 attempts
-↓ error
+OpenAI — up to 3 attempts
+↓ failure
 Anthropic — 1 attempt
-↓ error
+↓ failure
 Gemini — 1 attempt
-↓ error
+↓ failure
 HTTP 500
 ```
 
-The endpoint has no memory: each request is independent of previous ones.
+After a successful request, that provider is tried first on the next request.
+Database failures from chat memory are not treated as provider failures and do
+not trigger fallback.
 
-The response is returned as JSON:
+## Swagger
 
-```json
-{
-"response": "Model Response"
-}
-```
-
-Summary: `/ai-chat` should be used for conversations where the model needs to remember previous conversations; `/api/chatbot/chat` is used when service availability and automatic switching between LLM providers are more important. Both endpoints require Basic Authentication according to `SecurityConfig.java`
-
-### Swagger
 - [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
 - [http://localhost:8080/api-docs](http://localhost:8080/api-docs)
 
-### Notes
+## Configuration
 
-Before the application start, you need to set the environment variables (ANTHROPIC_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY):
-Example:
+Set the provider keys and model names before starting the application:
+
+```shell
+export OPENAI_API_KEY="your_secret_key"
+export ANTHROPIC_API_KEY="your_secret_key"
 export GEMINI_API_KEY="your_secret_key"
+export PRIMARY_LLM="gpt-5-mini"
+export SECONDARY_LLM="claude-sonnet"
+```
+
+`GEMINI_MODEL` is optional and defaults to the value configured in
+`application.yaml`.
