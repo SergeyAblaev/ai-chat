@@ -231,3 +231,36 @@ export SECONDARY_LLM="claude-sonnet"
 
 `GEMINI_MODEL` is optional and defaults to the value configured in
 `application.yaml`.
+
+## Frontend
+
+### Build
+
+```shell
+cd frontend 
+```
+
+```shell
+npm run lint
+```
+
+```shell
+npm run test
+```
+
+```shell
+npm run typecheck
+```
+
+```shell
+npm run build
+```
+
+```shell
+npm audit
+```
+
+### Stack
+- React 19.2.8
+- Vite 8.2.1
+- TypeScript
