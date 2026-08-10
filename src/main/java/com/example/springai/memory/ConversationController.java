@@ -1,14 +1,15 @@
 package com.example.springai.memory;
 
-import com.example.api.ApiIds;
 import com.example.api.AssistantMessage;
+import com.example.api.ExecutionDetails;
 import com.example.api.ExecutionMode;
 import com.example.multillm.AiModelCatalog;
-import com.example.multillm.AiProvider;
 import com.example.multillm.AiProviderRouter;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/conversations")
@@ -37,12 +39,36 @@ public class ConversationController {
     @PostMapping
     public ResponseEntity<ConversationResponse> createConversation() {
         ConversationService.Conversation conversation = conversationService.create();
-        ConversationResponse response = new ConversationResponse(
-                conversation.id(),
-                conversation.createdAt(),
-                conversation.title()
-        );
+        ConversationResponse response = toResponse(conversation);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @Operation(summary = "List context conversations")
+    @GetMapping
+    public List<ConversationResponse> listConversations() {
+        return conversationService.findAll().stream()
+                .map(ConversationController::toResponse)
+                .toList();
+    }
+
+    @Operation(summary = "List messages in a context conversation")
+    @GetMapping("/{conversationId}/messages")
+    public List<ConversationMessageResponse> listMessages(@PathVariable String conversationId) {
+        return conversationService.getMessages(conversationId).stream()
+                .map(message -> new ConversationMessageResponse(
+                        message.id(),
+                        message.role(),
+                        message.content(),
+                        message.createdAt()
+                ))
+                .toList();
+    }
+
+    @Operation(summary = "Delete a context conversation and its message history")
+    @DeleteMapping("/{conversationId}")
+    public ResponseEntity<Void> deleteConversation(@PathVariable String conversationId) {
+        conversationService.delete(conversationId);
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(
@@ -54,18 +80,25 @@ public class ConversationController {
             @PathVariable String conversationId,
             @RequestBody @Valid ChatRequest request
     ) {
-        AiProviderRouter.RoutingResult result = conversationService.addMessage(
+        ConversationService.MessageResult result = conversationService.addMessage(
                 conversationId,
                 request.prompt()
         );
-        ContextExecution execution = new ContextExecution(
-                ApiIds.next("req"),
+        AiProviderRouter.RoutingResult routing = result.routing();
+        ExecutionDetails execution = ExecutionDetails.success(
                 ExecutionMode.CONTEXT,
-                result.provider(),
-                aiModelCatalog.modelFor(result.provider()),
-                result.durationMs()
+                routing,
+                aiModelCatalog.modelFor(routing.provider())
         );
-        return new ContextChatResponse(AssistantMessage.create(result.content()), execution);
+        return new ContextChatResponse(result.message(), execution);
+    }
+
+    private static ConversationResponse toResponse(ConversationService.Conversation conversation) {
+        return new ConversationResponse(
+                conversation.id(),
+                conversation.createdAt(),
+                conversation.title()
+        );
     }
 
     public record ConversationResponse(
@@ -76,14 +109,13 @@ public class ConversationController {
 
     public record ContextChatResponse(
             AssistantMessage message,
-            ContextExecution execution
+            ExecutionDetails execution
     ) {}
 
-    public record ContextExecution(
-            String requestId,
-            ExecutionMode mode,
-            AiProvider provider,
-            String model,
-            long durationMs
+    public record ConversationMessageResponse(
+            String id,
+            String role,
+            String content,
+            OffsetDateTime createdAt
     ) {}
 }

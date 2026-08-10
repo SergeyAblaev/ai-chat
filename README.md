@@ -72,6 +72,12 @@ Successful response:
         "attempt": 1,
         "status": "SUCCESS",
         "durationMs": 1419
+      },
+      {
+        "provider": "GEMINI",
+        "attempt": null,
+        "status": "SKIPPED",
+        "durationMs": 0
       }
     ]
   }
@@ -79,8 +85,12 @@ Successful response:
 ```
 
 `fallbackUsed` is true only when the current request moves to a different
-provider. Retries of the same provider do not count as fallback. The `model`
-field is read from the active Spring configuration for the successful provider.
+provider. Retries of the same provider do not count as fallback. `attemptCount`
+counts executed attempts and excludes `SKIPPED` provider entries. Attempt status
+values are `PENDING`, `RUNNING`, `SUCCESS`, `FAILED`, and `SKIPPED`; synchronous
+completed responses normally contain `SUCCESS`, `FAILED`, and `SKIPPED`. The
+`model` field is read from the active Spring configuration for the successful
+provider.
 
 ### Create a context conversation
 
@@ -97,6 +107,15 @@ Returns `201 Created`:
   "title": null
 }
 ```
+
+List conversations, newest first:
+
+```http
+GET /api/conversations
+```
+
+The response is an array of conversation objects with the same `id`,
+`createdAt`, and `title` fields as the create response.
 
 ### Send a context message
 
@@ -124,10 +143,47 @@ Successful response:
     "mode": "CONTEXT",
     "provider": "OPENAI",
     "model": "gpt-5-mini",
-    "durationMs": 735
+    "status": "SUCCESS",
+    "fallbackUsed": false,
+    "attemptCount": 1,
+    "durationMs": 735,
+    "attempts": [
+      {
+        "provider": "OPENAI",
+        "attempt": 1,
+        "status": "SUCCESS",
+        "durationMs": 735
+      },
+      {
+        "provider": "ANTHROPIC",
+        "attempt": null,
+        "status": "SKIPPED",
+        "durationMs": 0
+      },
+      {
+        "provider": "GEMINI",
+        "attempt": null,
+        "status": "SKIPPED",
+        "durationMs": 0
+      }
+    ]
   }
 }
 ```
+
+List the user and assistant messages recorded for a conversation:
+
+```http
+GET /api/conversations/{conversationId}/messages
+```
+
+Delete a conversation and clear its Spring AI chat memory:
+
+```http
+DELETE /api/conversations/{conversationId}
+```
+
+Successful deletion returns `204 No Content`.
 
 An unknown conversation ID returns `404 Not Found`. A missing or blank `prompt`
 returns `400 Bad Request`.
