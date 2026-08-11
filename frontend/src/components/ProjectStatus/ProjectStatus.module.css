@@ -1,25 +1,29 @@
 .card {
   width: min(100%, 560px);
-  padding: 24px;
-  border: 1px solid #e1e1e7;
-  border-radius: 12px;
-  background: #ffffff;
+  padding: var(--space-6);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-xs);
 }
 
 .card h1 {
-  margin: 4px 0 8px;
-  font-size: 24px;
+  margin: var(--space-1) 0 var(--space-2);
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-title);
+  line-height: var(--line-height-title);
 }
 
 .card p {
   margin: 0;
-  line-height: 1.5;
+  line-height: var(--line-height-body);
 }
 
 .eyebrow {
-  color: #64646d;
-  font-size: 12px;
-  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-label);
+  line-height: var(--line-height-label);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }

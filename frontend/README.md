@@ -31,3 +31,9 @@ npm run build
 
 The root `ai-chat-console.design-contract.v1.json` file is a design reference.
 The application must not traverse that JSON to construct the runtime UI.
+
+The exported Light-theme variables and styles are represented as static CSS
+custom properties in `src/styles/tokens.css`. Semantic Figma names are preserved
+in kebab-case (for example, `bg/canvas` becomes `--bg-canvas`). The generic
+Figma service variable `Colors/Color` is intentionally excluded because it is
+not a semantic product token.
