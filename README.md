@@ -237,27 +237,38 @@ export SECONDARY_LLM="claude-sonnet"
 ### Build
 
 ```shell
-cd frontend 
-```
-
-```shell
+cd frontend
 npm run lint
 ```
 
 ```shell
+cd frontend
 npm run test
 ```
 
 ```shell
+cd frontend
 npm run typecheck
 ```
 
 ```shell
+cd frontend
 npm run build
 ```
 
 ```shell
+cd frontend
 npm audit
+```
+
+```shell
+cd frontend
+npm run dev
+```
+
+```shell
+cd frontend
+npm run start
 ```
 
 ### Stack
