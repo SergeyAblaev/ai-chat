@@ -1,6 +1,12 @@
 # AI-chat Project
 
-## Multi-LLM AI Chat Backend with Spring Boot and Conversation Memory
+**Multi-LLM AI Workspace** 
+A responsive full-stack AI workspace built with React, TypeScript, Spring Boot and Spring AI, featuring conversational memory,
+multi-provider failover and execution observability.
+
+##  Backend
+
+Multi-LLM AI Chat Backend with Spring Boot and Conversation Memory
 
 Secure REST API for an AI chatbot using Java, Spring Boot, and Spring AI. The
 application integrates OpenAI, Anthropic, and Google Gemini through a centralized
