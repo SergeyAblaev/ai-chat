@@ -1,8 +1,9 @@
 # AI-chat Project
 
-**Multi-LLM AI Workspace** 
-A responsive full-stack AI workspace built with React, TypeScript, Spring Boot and Spring AI, featuring conversational memory,
+**Multi-LLM AI Workspace** - A responsive full-stack AI workspace built with React, TypeScript, Spring Boot and Spring AI, featuring conversational memory,
 multi-provider failover and execution observability.
+
+![AI Chat Console screen.png](docs/AI%20Chat%20Console%20screen.png)
 
 ##  Backend
 
