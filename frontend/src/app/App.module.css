@@ -104,3 +104,140 @@
 .failed {
   font-weight: 600;
 }
+
+.loginPage {
+  align-items: center;
+  background:
+    radial-gradient(circle at 15% 15%, rgb(113 100 232 / 14%), transparent 34%),
+    radial-gradient(circle at 85% 85%, rgb(139 128 239 / 10%), transparent 30%),
+    var(--bg-canvas);
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--space-6);
+}
+
+.loginCard {
+  backdrop-filter: blur(var(--blur-glass-floating-toolbar));
+  background: rgb(255 255 255 / 82%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-glass);
+  display: grid;
+  gap: var(--space-5);
+  max-width: 420px;
+  padding: var(--space-8);
+  width: 100%;
+}
+
+.eyebrow {
+  color: var(--accent-primary);
+  font-size: var(--font-size-label);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  margin: 0 0 var(--space-1);
+  text-transform: uppercase;
+}
+
+.loginCard h1 {
+  font-size: var(--font-size-title);
+  line-height: var(--line-height-title);
+  margin: 0 0 var(--space-2);
+}
+
+.loginCopy,
+.securityNote {
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.loginForm {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.loginForm label {
+  color: var(--text-secondary);
+  display: grid;
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  gap: var(--space-2);
+}
+
+.loginForm input {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+  min-height: 44px;
+  outline: none;
+  padding: 10px var(--space-3);
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.loginForm input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgb(113 100 232 / 12%);
+}
+
+.connectButton,
+.demoButton {
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  min-height: 44px;
+  padding: 10px var(--space-4);
+}
+
+.connectButton {
+  background: var(--accent-primary);
+  border: 1px solid rgb(255 255 255 / 35%);
+  box-shadow: 0 5px 14px rgb(113 100 232 / 25%);
+  color: var(--text-inverse);
+  font-weight: 600;
+}
+
+.connectButton:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.demoButton {
+  background: var(--glass-background);
+  border: 1px solid var(--border-glass);
+  color: var(--text-primary);
+}
+
+.connectButton:disabled,
+.demoButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.authError,
+.operationError {
+  background: var(--status-error-bg);
+  border: 1px solid var(--status-error-border);
+  border-radius: var(--radius-lg);
+  color: var(--status-error-text);
+  font-size: var(--font-size-small);
+  margin: 0;
+  padding: var(--space-3);
+}
+
+.operationError {
+  margin: var(--space-3) var(--space-8) 0;
+}
+
+.securityNote {
+  font-size: var(--font-size-meta);
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .loginPage {
+    padding: var(--space-4);
+  }
+
+  .loginCard {
+    padding: var(--space-6);
+  }
+}

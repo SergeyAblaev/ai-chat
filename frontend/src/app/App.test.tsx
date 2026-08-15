@@ -4,14 +4,12 @@ import { describe, expect, it } from "vitest";
 import { App } from "./App";
 
 describe("App", () => {
-  it("renders the D05 resilient fallback scenario", () => {
+  it("renders the secure backend connection screen", () => {
     const markup = renderToStaticMarkup(<App />);
 
-    expect(markup).toContain("Resilient fallback");
-    expect(markup).toContain("The CAP theorem says");
-    expect(markup).toContain("Fallback");
-    expect(markup).toContain("OpenAI");
-    expect(markup).toContain("Anthropic");
-    expect(markup).toContain("Gemini");
+    expect(markup).toContain("Connect to the backend");
+    expect(markup).toContain('type="password"');
+    expect(markup).toContain("Credentials stay in memory");
+    expect(markup).toContain("Explore D05 demo");
   });
 });
