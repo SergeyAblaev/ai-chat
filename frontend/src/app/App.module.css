@@ -1,0 +1,106 @@
+.icon {
+  align-items: center;
+  display: inline-flex;
+  font-size: 16px;
+  height: 20px;
+  justify-content: center;
+  line-height: 1;
+  width: 20px;
+}
+
+.brandMark,
+.welcomeMark {
+  align-items: center;
+  background: linear-gradient(145deg, #8579f0, var(--accent-primary));
+  box-shadow: 0 6px 16px rgb(113 100 232 / 22%), inset 0 1px 0 rgb(255 255 255 / 38%);
+  color: var(--text-inverse);
+  display: inline-flex;
+  font-weight: 600;
+  justify-content: center;
+}
+
+.brandMark {
+  border-radius: 10px;
+  font-size: 11px;
+  height: 32px;
+  width: 32px;
+}
+
+.environment {
+  color: var(--text-tertiary);
+  display: block;
+  font-size: var(--font-size-meta);
+  padding: var(--space-2);
+  text-align: center;
+}
+
+.composerDock {
+  align-items: center;
+  background: linear-gradient(180deg, transparent, var(--bg-canvas) 22%);
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+  padding: var(--space-4) var(--space-6) var(--space-3);
+}
+
+.composerHint {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-meta);
+  line-height: var(--line-height-meta);
+  margin: var(--space-2) 0 0;
+  text-align: center;
+}
+
+.welcome {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+.welcomeMark {
+  border-radius: var(--radius-xl);
+  font-size: var(--font-size-heading);
+  height: 48px;
+  margin-bottom: var(--space-4);
+  width: 48px;
+}
+
+.welcome h1 {
+  font-size: var(--font-size-title);
+  line-height: var(--line-height-title);
+  margin: 0 0 var(--space-2);
+}
+
+.welcome p,
+.emptyDetails p {
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+.emptyDetails {
+  background: var(--bg-surface);
+  border-left: 1px solid var(--border-subtle);
+  height: 100%;
+  padding: var(--space-4);
+  width: var(--layout-details-expanded);
+}
+
+.emptyDetails h2 {
+  font-size: var(--font-size-heading);
+  margin: 0 0 var(--space-2);
+}
+
+.succeeded {
+  color: var(--status-success-text);
+  font-weight: 600;
+}
+
+.failed,
+.errorMessage {
+  color: var(--status-error-text);
+}
+
+.failed {
+  font-weight: 600;
+}

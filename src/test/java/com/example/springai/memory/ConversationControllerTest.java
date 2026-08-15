@@ -1,6 +1,9 @@
 package com.example.springai.memory;
 
+import com.example.api.AssistantMessage;
+import com.example.api.AttemptExecution;
 import com.example.api.ExecutionMode;
+import com.example.api.ExecutionStatus;
 import com.example.multillm.AiModelCatalog;
 import com.example.multillm.AiProvider;
 import com.example.multillm.AiProviderRouter;
@@ -15,7 +18,10 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -55,7 +61,14 @@ class ConversationControllerTest {
                         735
                 ))
         );
-        when(service.addMessage("conv_01J", "Explain Spring AI")).thenReturn(routingResult);
+        AssistantMessage message = new AssistantMessage(
+                "msg_01J",
+                "assistant",
+                "Spring AI explanation",
+                OffsetDateTime.parse("2026-08-07T16:03:12.150+07:00")
+        );
+        when(service.addMessage("conv_01J", "Explain Spring AI"))
+                .thenReturn(new ConversationService.MessageResult(message, routingResult));
         when(modelCatalog.modelFor(AiProvider.OPENAI)).thenReturn("gpt-5-mini");
 
         ConversationController.ContextChatResponse response = controller.addMessage(
@@ -69,7 +82,17 @@ class ConversationControllerTest {
         assertThat(response.execution().mode()).isEqualTo(ExecutionMode.CONTEXT);
         assertThat(response.execution().provider()).isEqualTo(AiProvider.OPENAI);
         assertThat(response.execution().model()).isEqualTo("gpt-5-mini");
+        assertThat(response.execution().status()).isEqualTo(ExecutionStatus.SUCCESS);
+        assertThat(response.execution().fallbackUsed()).isFalse();
+        assertThat(response.execution().attemptCount()).isEqualTo(1);
         assertThat(response.execution().durationMs()).isEqualTo(735);
+        assertThat(response.execution().attempts())
+                .extracting(AttemptExecution::status)
+                .containsExactly(
+                        AiProviderRouter.AttemptStatus.SUCCESS,
+                        AiProviderRouter.AttemptStatus.SKIPPED,
+                        AiProviderRouter.AttemptStatus.SKIPPED
+                );
     }
 
     @Test
@@ -88,7 +111,14 @@ class ConversationControllerTest {
                         735
                 ))
         );
-        when(service.addMessage("conv_01J", "Explain Spring AI")).thenReturn(routingResult);
+        AssistantMessage message = new AssistantMessage(
+                "msg_01J",
+                "assistant",
+                "Spring AI explanation",
+                OffsetDateTime.parse("2026-08-07T16:03:12.150+07:00")
+        );
+        when(service.addMessage("conv_01J", "Explain Spring AI"))
+                .thenReturn(new ConversationService.MessageResult(message, routingResult));
         when(modelCatalog.modelFor(AiProvider.OPENAI)).thenReturn("gpt-5-mini");
         MockMvc mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
 
@@ -97,6 +127,41 @@ class ConversationControllerTest {
                         .content("{\"prompt\":\"Explain Spring AI\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message.content").value("Spring AI explanation"))
-                .andExpect(jsonPath("$.execution.mode").value("CONTEXT"));
+                .andExpect(jsonPath("$.execution.mode").value("CONTEXT"))
+                .andExpect(jsonPath("$.execution.status").value("SUCCESS"))
+                .andExpect(jsonPath("$.execution.attempts[1].status").value("SKIPPED"));
+    }
+
+    @Test
+    void exposesConversationListHistoryAndDeleteEndpoints() throws Exception {
+        ConversationService service = mock(ConversationService.class);
+        AiModelCatalog modelCatalog = mock(AiModelCatalog.class);
+        ConversationController controller = new ConversationController(service, modelCatalog);
+        OffsetDateTime createdAt = OffsetDateTime.parse("2026-08-07T16:02:31.425+07:00");
+        when(service.findAll()).thenReturn(List.of(
+                new ConversationService.Conversation("conv_01J", createdAt, "Spring AI")
+        ));
+        when(service.getMessages("conv_01J")).thenReturn(List.of(
+                new ConversationService.ConversationMessage(
+                        "msg_user",
+                        "user",
+                        "Explain Spring AI",
+                        createdAt
+                )
+        ));
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+
+        mockMvc.perform(get("/api/conversations"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value("conv_01J"))
+                .andExpect(jsonPath("$[0].title").value("Spring AI"));
+        mockMvc.perform(get("/api/conversations/conv_01J/messages"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].role").value("user"))
+                .andExpect(jsonPath("$[0].content").value("Explain Spring AI"));
+        mockMvc.perform(delete("/api/conversations/conv_01J"))
+                .andExpect(status().isNoContent());
+
+        verify(service).delete("conv_01J");
     }
 }

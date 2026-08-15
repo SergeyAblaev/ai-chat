@@ -124,7 +124,10 @@ public class AiProviderRouter {
     ) {}
 
     public enum AttemptStatus {
+        PENDING,
+        RUNNING,
         SUCCESS,
-        FAILED
+        FAILED,
+        SKIPPED
     }
 }

@@ -1,5 +1,6 @@
 package com.example.multillm;
 
+import com.example.api.AttemptExecution;
 import com.example.api.ExecutionMode;
 import com.example.api.ExecutionStatus;
 import org.junit.jupiter.api.Test;
@@ -46,12 +47,13 @@ class ChatbotControllerTest {
         assertThat(response.execution().attemptCount()).isEqualTo(4);
         assertThat(response.execution().durationMs()).isEqualTo(4_231);
         assertThat(response.execution().attempts())
-                .extracting(ChatbotController.AttemptExecution::status)
+                .extracting(AttemptExecution::status)
                 .containsExactly(
                         AiProviderRouter.AttemptStatus.FAILED,
                         AiProviderRouter.AttemptStatus.FAILED,
                         AiProviderRouter.AttemptStatus.FAILED,
-                        AiProviderRouter.AttemptStatus.SUCCESS
+                        AiProviderRouter.AttemptStatus.SUCCESS,
+                        AiProviderRouter.AttemptStatus.SKIPPED
                 );
     }
 }
