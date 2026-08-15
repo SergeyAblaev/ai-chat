@@ -23,6 +23,106 @@ The API supports two modes:
 All endpoints require HTTP Basic authentication. The default development user is
 `user` / `user123`.
 
+
+### Running
+
+```bash
+cd $PROJECT_ROOT
+
+export OPENAI_API_KEY="your_secret_key"
+export ANTHROPIC_API_KEY="your_secret_key"
+export GEMINI_API_KEY="your_secret_key"
+export PRIMARY_LLM="gpt-5-mini"
+export SECONDARY_LLM="claude-sonnet"
+export APP_USER_PASSWORD="user123"
+export APP_ADMIN_PASSWORD="admin123"
+
+mvn spring-boot:run
+```
+
+## Frontend
+
+### Running
+
+```bash
+cd $PROJECT_ROOT/frontend
+
+cp .env.example .env.local
+npm install
+npm run dev
+```
+
+or
+
+```shell
+cd frontend
+npm run dev
+```
+
+### Build
+
+```shell
+cd frontend
+npm run lint
+```
+
+```shell
+cd frontend
+npm run test
+```
+
+```shell
+cd frontend
+npm run typecheck
+```
+
+```shell
+cd frontend
+npm run build
+```
+
+```shell
+cd frontend
+npm audit
+```
+
+```shell
+cd frontend
+npm run start
+```
+
+### Stack
+- React 19.2.8
+- Vite 8.2.1
+- TypeScript
+
+## Dev Links
+
+- [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+- [http://localhost:5173/](http://localhost:5173/)
+
+## Provider routing
+
+For the first request, the default order is:
+
+```text
+OpenAI — up to 3 attempts
+↓ failure
+Anthropic — 1 attempt
+↓ failure
+Gemini — 1 attempt
+↓ failure
+HTTP 500
+```
+
+After a successful request, that provider is tried first on the next request.
+Database failures from chat memory are not treated as provider failures and do
+not trigger fallback.
+
+
+
+# NOTE --==move below to Backend ReadMe==
+
 ## API
 
 ### Resilient request
@@ -201,24 +301,6 @@ in-memory registry. Message history is stored by Spring AI through the JDBC chat
 memory repository in the in-memory HSQLDB, so both are cleared on application
 restart.
 
-## Provider routing
-
-For the first request, the default order is:
-
-```text
-OpenAI — up to 3 attempts
-↓ failure
-Anthropic — 1 attempt
-↓ failure
-Gemini — 1 attempt
-↓ failure
-HTTP 500
-```
-
-After a successful request, that provider is tried first on the next request.
-Database failures from chat memory are not treated as provider failures and do
-not trigger fallback.
-
 ## Swagger
 
 - [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
@@ -238,47 +320,3 @@ export SECONDARY_LLM="claude-sonnet"
 
 `GEMINI_MODEL` is optional and defaults to the value configured in
 `application.yaml`.
-
-## Frontend
-
-### Build
-
-```shell
-cd frontend
-npm run lint
-```
-
-```shell
-cd frontend
-npm run test
-```
-
-```shell
-cd frontend
-npm run typecheck
-```
-
-```shell
-cd frontend
-npm run build
-```
-
-```shell
-cd frontend
-npm audit
-```
-
-```shell
-cd frontend
-npm run dev
-```
-
-```shell
-cd frontend
-npm run start
-```
-
-### Stack
-- React 19.2.8
-- Vite 8.2.1
-- TypeScript

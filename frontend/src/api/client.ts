@@ -94,7 +94,10 @@ export class ApiClient {
   constructor({ baseUrl = API_BASE_URL, credentials, fetcher = fetch }: ApiClientOptions) {
     this.authorization = basicAuthorization(credentials);
     this.baseUrl = baseUrl.replace(/\/$/, "");
-    this.fetcher = fetcher;
+    // Browser fetch is a Web API method and must keep the global object as its
+    // receiver. Calling an unbound fetch stored on ApiClient causes
+    // "Illegal invocation" in browsers even though test doubles allow it.
+    this.fetcher = fetcher.bind(globalThis);
   }
 
   private async request<T>(path: string, init: RequestInit = {}): Promise<T> {

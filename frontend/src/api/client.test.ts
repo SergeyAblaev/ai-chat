@@ -71,4 +71,14 @@ describe("ApiClient", () => {
       new ApiError("Authentication failed. Check your username and password.", 401),
     );
   });
+
+  it("keeps the browser global as the fetch receiver", async () => {
+    const browserLikeFetch = function (this: unknown) {
+      expect(this).toBe(globalThis);
+      return Promise.resolve(jsonResponse([]));
+    } as typeof fetch;
+    const client = new ApiClient({ credentials, fetcher: browserLikeFetch });
+
+    await client.listConversations();
+  });
 });
