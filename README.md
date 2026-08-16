@@ -32,8 +32,9 @@ cd $PROJECT_ROOT
 export OPENAI_API_KEY="your_secret_key"
 export ANTHROPIC_API_KEY="your_secret_key"
 export GEMINI_API_KEY="your_secret_key"
-export PRIMARY_LLM="gpt-5-mini"
-export SECONDARY_LLM="claude-sonnet"
+export OPENAI_MODEL="gpt-5-mini"
+export ANTHROPIC_MODEL="claude-sonnet"
+export GEMINI_MODEL="gemini-3.5-flash-lite"
 export APP_USER_PASSWORD="user123"
 export APP_ADMIN_PASSWORD="admin123"
 
@@ -136,7 +137,7 @@ Content-Type: application/json
 }
 ```
 
-Successful response:
+Successful response example:
 
 ```json
 {
@@ -314,8 +315,8 @@ Set the provider keys and model names before starting the application:
 export OPENAI_API_KEY="your_secret_key"
 export ANTHROPIC_API_KEY="your_secret_key"
 export GEMINI_API_KEY="your_secret_key"
-export PRIMARY_LLM="gpt-5-mini"
-export SECONDARY_LLM="claude-sonnet"
+export OPENAI_MODEL="gpt-5-mini"
+export ANTHROPIC_MODEL="claude-sonnet"
 ```
 
 `GEMINI_MODEL` is optional and defaults to the value configured in
