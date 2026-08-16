@@ -2,3 +2,5 @@
 /.idea/
 /logs/
 /tools/
+/backend/target/
+/backend/logs/
