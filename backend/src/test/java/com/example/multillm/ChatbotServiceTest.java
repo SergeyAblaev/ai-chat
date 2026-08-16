@@ -23,8 +23,8 @@ class ChatbotServiceTest {
     private static final String LLM_PROMPT = "What is the capital of Britan?";
     private static final String EXPECTED_LLM_RESPONSE = "London";
 
-    private static final String PRIMARY_LLM = "gpt-5";
-    private static final String SECONDARY_LLM = "gpt-3.5-turbo";
+    private static final String OPENAI_MODEL = "gpt-5";
+    private static final String ANTHROPIC_MODEL = "gpt-3.5-turbo";
     private static final String GEMINI_LLM = "gemini-3.5-flash-lite";
 
     private static final String INVALID_OPENAI_API_KEY = "sk-invalid-openai-8f3a1c7e";
@@ -41,9 +41,9 @@ class ChatbotServiceTest {
     @EnabledIfEnvironmentVariable(named = "GEMINI_API_KEY", matches = "\\S+")
     @TestPropertySource(properties = {
         "spring.ai.openai.api-key=" + INVALID_OPENAI_API_KEY,
-        "spring.ai.openai.chat.options.model=" + PRIMARY_LLM,
+        "spring.ai.openai.chat.options.model=" + OPENAI_MODEL,
         "spring.ai.anthropic.api-key=" + INVALID_ANTHROPIC_API_KEY,
-        "spring.ai.anthropic.chat.options.model=" + SECONDARY_LLM,
+        "spring.ai.anthropic.chat.options.model=" + ANTHROPIC_MODEL,
         "spring.ai.google.genai.chat.options.model=" + GEMINI_LLM
     })
     class PrimaryLLMFailsLiveTest {
@@ -71,9 +71,9 @@ class ChatbotServiceTest {
     @DirtiesContext
     @EnabledIfEnvironmentVariable(named = "OPENAI_API_KEY", matches = "\\S+")
     @TestPropertySource(properties = {
-        "spring.ai.openai.chat.options.model=" + PRIMARY_LLM,
+        "spring.ai.openai.chat.options.model=" + OPENAI_MODEL,
         "spring.ai.anthropic.api-key=" + INVALID_ANTHROPIC_API_KEY,
-        "spring.ai.anthropic.chat.options.model=" + SECONDARY_LLM,
+        "spring.ai.anthropic.chat.options.model=" + ANTHROPIC_MODEL,
         "spring.ai.google.genai.api-key=" + INVALID_GEMINI_API_KEY
     })
     class PrimaryLLMSucceedsLiveTest {
